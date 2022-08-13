@@ -1,3 +1,5 @@
+use std::io::stdin;
+
 fn main() {
     println!("Snake Game!");
 
@@ -8,11 +10,11 @@ fn main() {
 
     draw_gameboard(&gameboard, WIDTH, HEIGHT);
     add_snake(&mut gameboard);
-    draw_gameboard(&gameboard, WIDTH, HEIGHT);
-    move_snake(&mut gameboard, 'R', HEIGHT);
-    draw_gameboard(&gameboard, WIDTH, HEIGHT);
-    move_snake(&mut gameboard, 'D', HEIGHT);
-    draw_gameboard(&gameboard, WIDTH, HEIGHT);
+
+    loop {
+        draw_gameboard(&gameboard, WIDTH, HEIGHT);
+        move_snake(&mut gameboard, get_next_move(), HEIGHT);
+    }
 }
 
 fn make_gameboard(width: usize, height: usize) -> Vec<Pixel> {
@@ -106,6 +108,15 @@ fn move_snake(gameboard: &mut Vec<Pixel>, direction: char, height: usize) {
             break;
         }
     }
+}
+
+fn get_next_move() -> char {
+    let mut next_move = String::new();
+    stdin().read_line(&mut next_move)
+    	.ok()
+        .expect("Failed to read line");
+
+    next_move.chars().next().unwrap()
 }
 
 struct Pixel {
