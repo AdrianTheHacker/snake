@@ -3,8 +3,8 @@ use std::io::stdin;
 fn main() {
     println!("Snake Game!");
 
-    const WIDTH: usize = 5;
-    const HEIGHT: usize = 9;
+    const WIDTH: usize = 9;
+    const HEIGHT: usize = 5;
 
     let mut gameboard = make_gameboard(WIDTH, HEIGHT);
 
@@ -13,7 +13,7 @@ fn main() {
 
     loop {
         draw_gameboard(&gameboard, WIDTH, HEIGHT);
-        move_snake(&mut gameboard, get_next_move(), HEIGHT);
+        move_snake(&mut gameboard, get_next_move(), WIDTH, HEIGHT);
     }
 }
 
@@ -37,9 +37,9 @@ fn make_gameboard(width: usize, height: usize) -> Vec<Pixel> {
 }
 
 fn draw_gameboard(gameboard: &Vec<Pixel>, width: usize, height: usize, ) {
-    for y in 0..width {
-        for x in 0..height {
-            match gameboard[x + (y * height)].direction {
+    for y in 0..height {
+        for x in 0..width {
+            match gameboard[x + (y * width)].direction {
                 'N' => print!("{}", "O"),
                 'U' => print!("{}", "^"),
                 'D' => print!("{}", "v"),
@@ -56,7 +56,7 @@ fn draw_gameboard(gameboard: &Vec<Pixel>, width: usize, height: usize, ) {
 fn draw_grid_cords(width: usize, height: usize) {
     for pixel_x in 0..width {
         for pixel_y in 0..height {
-            if pixel_y == height - 1 {
+            if pixel_y == height {
                 println!("[{}, {}]", pixel_x, pixel_y);
                 println!("new line");
             }
@@ -73,7 +73,7 @@ fn add_snake(gameboard: &mut Vec<Pixel>) {
     gameboard[0].position = 1; // Makes the top left pixel of the screen the head of the snake.
 }
 
-fn move_snake(gameboard: &mut Vec<Pixel>, direction: char, height: usize) {
+fn move_snake(gameboard: &mut Vec<Pixel>, direction: char, width: usize, height: usize) {
     for index in 0..gameboard.len() - 1 {
         if gameboard[index].position == 1 {
             // move in direction
@@ -82,19 +82,27 @@ fn move_snake(gameboard: &mut Vec<Pixel>, direction: char, height: usize) {
 
             match direction {
                 'U' => {
-                    next_spot = index - height;
+                    if index > width - 1 {  // Top pixels
+                        next_spot = index - width;
+                    }
                 },
 
                 'D' => {
-                    next_spot = index + height;
-                },
-
-                'L' => {
-                    next_spot = index - 1;
+                    if index + width <= gameboard.len() - width {  // Bottom pixels
+                        next_spot = index + width;
+                    }
                 },
 
                 'R' => {
-                    next_spot = index + 1;
+                    if (index + 1) % width != 0 {
+                        next_spot = index + 1;
+                    }
+                },
+
+                'L' => {
+                    if index % width != 0 {
+                        next_spot = index - 1;
+                    }
                 }
 
                 _ => println!("This is why we can't have nice things"),
@@ -102,15 +110,17 @@ fn move_snake(gameboard: &mut Vec<Pixel>, direction: char, height: usize) {
 
             gameboard[next_spot].direction = direction;
             gameboard[next_spot].position = gameboard[index].position;
-            gameboard[index].direction = 'N';
-            gameboard[index].position = 0;
-
+            if next_spot != index {
+                gameboard[index].direction = 'N';
+                gameboard[index].position = 0;
+            }
+            
             break;
         }
     }
 }
 
-fn get_next_move() -> char {
+fn get_next_move() -> char { 
     let mut next_move = String::new();
     stdin().read_line(&mut next_move)
     	.ok()
